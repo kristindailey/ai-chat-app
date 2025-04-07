@@ -24,11 +24,11 @@ const openai = new OpenAI({
 });
 
 // Register user with Stream Chat
-app.post("/register-user", async (req: Request, res: Response):Promise<any> => {
+app.post("/register-user", async (req: Request, res: Response): Promise<any> => {
     const { name, email } = req.body || {};
 
     if (!name || !email) {
-        return res.status(400).json({error: "Name and email are required."});
+        return res.status(400).json({ error: "Name and email are required." });
     }
 
     try {
@@ -49,7 +49,7 @@ app.post("/register-user", async (req: Request, res: Response):Promise<any> => {
 
         res.status(200).json({ userId, name, email });
     } catch (error) {
-        res.status(500).json({error: "Internal server error."});   
+        res.status(500).json({ error: "Internal server error." });   
     }
 });
 
@@ -58,7 +58,7 @@ app.post("/chat", async (req: Request, res: Response): Promise<any> => {
     const { message, userId } = req.body;
 
     if (!message || !userId) {
-        return res.status(400).json({error: "Message and user are required."});
+        return res.status(400).json({ error: "Message and user are required." });
     }
 
     try {
@@ -66,12 +66,30 @@ app.post("/chat", async (req: Request, res: Response): Promise<any> => {
         const userResponse = await chatClient.queryUsers({ id: userId });
 
         if (!userResponse.users.length) {
-            return res.status(404).json({error: "User not found. Please register first."});
+            return res.status(404).json({ error: "User not found. Please register first." });
         }
 
-        res.send("Success!");
+        // Send message to OpenAI GPT-4
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [{ role: "user", content: message }],
+        });
+
+        const aiMessage: string = response.choices[0].message?.content ?? "No response from AI.";
+
+        // Create or get channel
+        const channel = chatClient.channel("messaging", `chat-${userId}`, {
+            name: "AI Chat", 
+            created_by_id: "ai_bot",
+        });
+
+        await channel.create();
+        await channel.sendMessage({ text: aiMessage, user_id: "ai_bot" });
+
+        res.status(200).json({ reply: aiMessage });
     } catch (error) {
-        return res.status(500).json({error: "Internal server error."});
+        console.log("Error generating AI response:", error);
+        return res.status(500).json({ error: "Internal server error." });
     }
 });
 
