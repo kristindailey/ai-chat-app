@@ -84,6 +84,16 @@ app.post("/chat", async (req: Request, res: Response): Promise<any> => {
             return res.status(404).json({ error: "User not found. Please register first." });
         }
 
+        // Check user in database
+        const existingUser = await db
+            .select()
+            .from(users)
+            .where(eq(users.userId, userId));
+
+        if (!existingUser.length) {
+            return res.status(404).json({ error: "User not found in database. Please register." });
+        }
+
         // Send message to OpenAI GPT-4
         const response = await openai.chat.completions.create({
             model: "gpt-4",
@@ -91,6 +101,9 @@ app.post("/chat", async (req: Request, res: Response): Promise<any> => {
         });
 
         const aiMessage: string = response.choices[0].message?.content ?? "No response from AI.";
+
+        // Save chat to database
+        await db.insert(chats).values({ userId, message, reply: aiMessage });
 
         // Create or get channel
         const channel = chatClient.channel("messaging", `chat-${userId}`, {
