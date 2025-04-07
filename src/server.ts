@@ -3,6 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { StreamChat } from "stream-chat";
 import OpenAI from "openai";
+import { db } from "./config/database.js";
+import { chats, users } from "./db/schema.js";
+import { eq } from "drizzle-orm";
+import { ChatCompletionMessageParam } from "openai/resources";
 
 dotenv.config();
 
@@ -45,6 +49,17 @@ app.post("/register-user", async (req: Request, res: Response): Promise<any> => 
                 email: email, 
                 role: "user",
             });
+        }
+
+        // Check for existing user in database
+        const existingUser = await db
+            .select()
+            .from(users)
+            .where(eq(users.userId, userId));
+
+        if (!existingUser.length) {
+            console.log(`User ${userId} does not exist in the databsse. Adding them...`);
+            await db.insert(users).values({ userId, name, email });
         }
 
         res.status(200).json({ userId, name, email });
