@@ -3,6 +3,16 @@
     import robotImage from "../assets/robot.png";
 
     const name = ref("");
+    const email = ref("");
+    const loading = ref(false);
+    const error = ref("");
+
+    const createUser = async () => {
+        if (!name.value || !email.value) {
+            error.value = "Name and email are required.";
+            return;
+        }
+    };
 </script>
 
 <template>
@@ -14,6 +24,14 @@
             </h1>
 
             <input type="text" class="w-full p-2 mb-2 bg-gray-700 text-white rounded-lg focus:outline-none" placeholder="Name" v-model="name">
+
+            <input type="email" class="w-full p-2 mb-2 bg-gray-700 text-white rounded-lg focus:outline-none" placeholder="Email" v-model="email">
+
+            <button @click="createUser" class="w-full p-2 bg-blue-500 rounded-lg" :disabled="loading">
+                {{ loading ? "Logging in..." : "Start Chat" }}
+            </button>
+
+            <p v-if="error" class="text-red-400 text-center mt-2">{{  error  }}</p>
         </div>
     </div>
 </template>
