@@ -58,7 +58,7 @@ app.post("/register-user", async (req: Request, res: Response): Promise<any> => 
             .where(eq(users.userId, userId));
 
         if (!existingUser.length) {
-            console.log(`User ${userId} does not exist in the databsse. Adding them...`);
+            console.log(`User ${userId} does not exist in the database. Adding them...`);
             await db.insert(users).values({ userId, name, email });
         }
 
