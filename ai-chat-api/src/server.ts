@@ -135,7 +135,7 @@ app.post("/get-messages", async (req: Request, res: Response): Promise<any> => {
             .from(chats)
             .where(eq(chats.userId, userId));
 
-        res.status(200).json({ message: chatHistory });
+        res.status(200).json({ messages: chatHistory });
     } catch (error) {
         console.log("Error fetching chat history", error);
         res.status(500).json({ error: "Internal server error."});
