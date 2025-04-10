@@ -28,9 +28,17 @@ export const useChatStore = defineStore("chat", () => {
                 userId: userStore.userId,
             });
 
-            
+
+            messages.value = data.messages
+                .flatMap((msg: ChatMessage): FormattedMessage[] => [
+                    {role: "user", content: msg.message},
+                    {role: "ai", content: msg.reply},
+                ])
+                .filter((msg: FormattedMessage) => msg.content);
         } catch (error) {
-            
+            console.error("Error loading chat history: ", error);
         }
     };
+
+    return {messages, isLoading, loadChatHistory};
 });
