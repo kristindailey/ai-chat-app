@@ -4,6 +4,7 @@
     import { useChatStore } from "../stores/chat";
     import { useRouter } from "vue-router";
     import Header from '../components/Header.vue';
+    import ChatInput from "../components/ChatInput.vue";
 
     const userStore = useUserStore();
     const chatStore = useChatStore();
@@ -45,5 +46,7 @@
                 </div>
             </div>
          </div>
+
+         <ChatInput @send="chatStore.sendMessage" />
     </div>
 </template>
